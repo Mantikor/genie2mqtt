@@ -4,7 +4,7 @@
 # Copyright: (c) 2018, Streltsov Sergey
 # Author: Streltsov Sergey (mailto:straltsou.siarhei@gmail.com, http://blablasoft.ru)
 # License: MIT
-# Version: 0.0.3 from 2017.04.04
+# Version: 0.0.3 from 2018.04.04
 # Socket name length = 11 char
 """
 The library translate Energenie socket state to MQTT server

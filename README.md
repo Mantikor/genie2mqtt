@@ -11,7 +11,6 @@ MQTT_USER = 'you_mqtt_username' - mqtt broker username
 MQTT_PASS = 'you_mqtt_pass' - mqtt broker password
 SCAN_INTERVAL = 600 - Energenie socket state scan interval, default 600 sec (5 min)
 
-
 put genie2mqtt.py in autorun:
 
 for Debian users, put files on /usr/local/etc/
@@ -27,15 +26,8 @@ User=%i
 ExecStart=/usr/local/etc/genie2mqtt.py
 KillMode=process
 KillSignal=SIGTERM
-
-# Don't want to see an automated SIGKILL ever
-# SendSIGKILL=no
-
-# Restart crashed server only, on-failure would also restart, for example, when
-# my.cnf contains unknown option
 Restart=on-abort
 RestartSec=10s
-
 
 [Install]
 WantedBy=multi-user.target

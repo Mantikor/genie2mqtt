@@ -16,13 +16,17 @@ put genie2mqtt.py in autorun
 import paho.mqtt.client as mqtt
 import genie
 import time
+import logging
+from logging.handlers import RotatingFileHandler
 
-PM_IP = 'http://you_energenie_ip'
-PM_PASS = 'you_energenie_pass'
-MQTT_IP = 'you_mqtt_ip'
-MQTT_USER = 'you_mqtt_username'
-MQTT_PASS = 'you_mqtt_pass'
-SCAN_INTERVAL = 600
+PM_IP = '192.168.0.10' # ip address of your EG-PMS-LAN
+PM_PASS = 'password' # password to access EG-PMS-LAN
+MQTT_IP = '192.168.0.11' # ip address of mqtt broker
+MQTT_USER = 'user' # user to access mqtt broker
+MQTT_PASS = 'password' # password to access mqtt broker
+SCAN_INTERVAL = 600 # scan interval in seconds
+LOG_FILE = '/var/log/genie2mqtt.log' # path to log-file
+# LOG_FILE = 'd:\\genie2mqtt.log' # for winwows users
 
 
 def on_connect(client, userdata, flags, rc):
@@ -32,13 +36,16 @@ def on_connect(client, userdata, flags, rc):
         client.subscribe('energenie/socket2/state/', 0)
         client.subscribe('energenie/socket3/state/', 0)
         client.subscribe('energenie/socket4/state/', 0)
+        client.energenie_logger.info('Connection established with code: {}'.format(rc))
     else:
-        pass
+        client.energenie_logger.info('Connection code: {}'.format(rc))
+        # pass
         # print('connection error, try again...')
 
 
 def on_message(client, userdata, msg):
     client.energenie_socket.toggle_pm(command=str(int(msg.payload)), socket=str(msg.topic[-8]))
+    client.energenie_logger.info('message: {}'.format(msg.payload))
     client.energenie_socket.update(False)
 
 
@@ -61,7 +68,19 @@ def renew(client):
     client.publish('energenie/socket2/state/', str(client.energenie_socket.socket2['state']), 0)
     client.publish('energenie/socket3/state/', str(client.energenie_socket.socket3['state']), 0)
     client.publish('energenie/socket4/state/', str(client.energenie_socket.socket4['state']), 0)
+    client.energenie_logger.info('Socket is: {}'.format(isAvailable))
 
+
+log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
+my_handler = RotatingFileHandler(LOG_FILE, mode='a', maxBytes=100*1024,
+                                 backupCount=2, encoding=None, delay=0)
+my_handler.setFormatter(log_formatter)
+my_handler.setLevel(logging.INFO)
+
+app_log = logging.getLogger('root')
+app_log.setLevel(logging.INFO)
+
+app_log.addHandler(my_handler)
 
 p1 = genie.Energenie('http://'+PM_IP, PM_PASS)
 p1.update(True)
@@ -71,19 +90,25 @@ mqtt.Client.connected_flag = False
 mqttc = mqtt.Client()
 mqttc.username_pw_set(username=MQTT_USER, password=MQTT_PASS)
 mqttc.energenie_socket = p1
+mqttc.energenie_logger = app_log
 mqttc.on_message = on_message
 mqttc.on_connect = on_connect
 
+try:
+    mqttc.connect(MQTT_IP, 1883, 60)
+    mqttc.loop_start()
+except:
+    mqttc.energenie_logger.error('Try reconnect...')
+    # print('wait...')
+    # mqttc.loop_stop()
+    time.sleep(10)
+
 while not mqttc.connected_flag:
-    try:
-        mqttc.connect(MQTT_IP, 1883, 60)
-    except:
-        # print('wait...')
-        time.sleep(2)
+    mqttc.energenie_logger.error('Connection with MQTT server not established...')
+    time.sleep(5)
 
-renew(mqttc, p1)
+renew(mqttc)
 
-mqttc.loop_start()
 while True:
     mqttc.energenie_socket.update(False)
     renew(mqttc)

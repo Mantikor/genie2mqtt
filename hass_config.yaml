@@ -1,0 +1,42 @@
+# simple example for config Energenie with mqtt bridge in home-assistant
+switch:
+  - platform: mqtt
+    name: socket_1
+    state_topic: "energenie/socket1/state/"
+    command_topic: "energenie/socket1/state/"
+    availability_topic: "energenie/online/"
+    payload_on: "1"
+    payload_off: "0"
+    optimistic: false
+    qos: 0
+    retain: true
+  - platform: mqtt
+    name: socket_2
+    state_topic: "energenie/socket2/state/"
+    command_topic: "energenie/socket2/state/"
+    availability_topic: "energenie/online/"
+    payload_on: "1"
+    payload_off: "0"
+    optimistic: false
+    qos: 0
+    retain: true
+  - platform: mqtt
+    name: socket_3
+    state_topic: "energenie/socket3/state/"
+    command_topic: "energenie/socket3/state/"
+    availability_topic: "energenie/online/"
+    payload_on: "1"
+    payload_off: "0"
+    optimistic: false
+    qos: 0
+    retain: true
+  - platform: mqtt
+    name: socket_4
+    state_topic: "energenie/socket4/state/"
+    command_topic: "energenie/socket4/state/"
+    availability_topic: "energenie/online/"
+    payload_on: "1"
+    payload_off: "0"
+    optimistic: false
+    qos: 0
+    retain: true

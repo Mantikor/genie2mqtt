@@ -1,4 +1,5 @@
-# genie2mqtt
+# genie2mqtt - Energenie EG-PMS-LAN to MQTT bridge, for use with home-assistant and other
+
 Copyright: (c) 2018, Streltsov Sergey
 
 Author: Streltsov Sergey (mailto:straltsou.siarhei@gmail.com, http://blablasoft.ru)
@@ -27,35 +28,34 @@ MQTT_PASS = 'you_mqtt_pass' - mqtt broker password
 
 SCAN_INTERVAL = 600 - Energenie socket state scan interval, default 600 sec (10 min)
 
-put genie2mqtt.py in autorun:
+# Put genie2mqtt.py in autorun:
 
 for Debian users, put files on /usr/local/etc/
 
 create on etc/systemd/system file genie2mqtt.service
 
 [Unit]
-
 Description=Energenie to MQTT service daemon
-
-After=network-online.target
+After=network.target
 
 [Service]
-
 Type=simple
-
+PIDFile=/var/run/genie2mqtt/genie2mqtt.pid
 User=%i
-
-ExecStart=/usr/local/etc/genie2mqtt.py
-
-KillMode=process
-
-KillSignal=SIGTERM
-
-Restart=on-abort
-
-RestartSec=10s
+OOMScoreAdjust=-100
+ExecStart=/usr/local/etc/genie2mqtt.py -nolog
+TimeoutStopSec=5
+Restart=always
 
 [Install]
-
 WantedBy=multi-user.target
+Alias=genie2mqtt.service
 
+# Reload systemd daemon
+systemctl daemon-reload
+# Enable your service
+systemctl enable genie2mqtt
+# Start your service
+systemctl start genie2mqtt
+# Check service status
+systemctl -l status genie2mqtt

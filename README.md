@@ -35,20 +35,31 @@ for Debian users, put files on /usr/local/etc/
 create on etc/systemd/system file genie2mqtt.service
 
 [Unit]
+
 Description=Energenie to MQTT service daemon
+
 After=network.target
 
 [Service]
+
 Type=simple
+
 PIDFile=/var/run/genie2mqtt/genie2mqtt.pid
+
 User=%i
+
 OOMScoreAdjust=-100
+
 ExecStart=/usr/local/etc/genie2mqtt.py -nolog
+
 TimeoutStopSec=5
+
 Restart=always
 
 [Install]
+
 WantedBy=multi-user.target
+
 Alias=genie2mqtt.service
 
 # Reload systemd daemon
